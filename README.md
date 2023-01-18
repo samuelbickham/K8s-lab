@@ -14,7 +14,7 @@ This document is a walkthrough for setting up Kubernetes (K8s) with Docker conta
 2. Build an Illumio Core PCE 
 3. Connect the K8s cluster to Illumio Core (Click here for this guide)
 
-This guide walks through the first step, building a K8s cluster. Follow this guide by John Westerman to build your PCE. Follow this guide to connect your K8s cluster to the Illumio Core PCE. Let's get to it. 
+This guide walks through the first step, building a K8s cluster. Follow <a href="https://github.com/johnwesterman/illumio_core/blob/cliffnotes_2022.08/README.md">this guide</a> by John Westerman to build your PCE. Follow <a href="#">this guide</a> to connect your K8s cluster to the Illumio Core PCE. Let's get to it. 
 
 
 ## Summary of Tasks:
@@ -35,7 +35,7 @@ This guide walks through the first step, building a K8s cluster. Follow this gui
 
 ## Step 1: Download Ubuntu 20.04 (link) and install it on three virtual machines in hypervisor of your choice
 
-You can download it <a href="https://www.linuxvmimages.com/images/ubuntuserver-2204/">here.</a>> Accept all defaults during install, do not run updates and install the OpenSSH server. 
+You can download it <a href="https://www.linuxvmimages.com/images/ubuntuserver-2204/">here.</a> Accept all defaults during install, do not run updates and install the OpenSSH server. 
 
 
 ## Step 2: Install K8s and Docker (ALL NODES)
