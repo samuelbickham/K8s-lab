@@ -12,14 +12,14 @@ Version 2023.01
 This document is a walkthrough for setting up Kubernetes (K8s) with Docker container runtime and connecting it to an Illumio Core PCE. There are 3 main components:
 1. Build a K8s cluster (the guide your reading)
 2. Build an Illumio Core PCE 
-3. Connect the K8s cluster to Illumio Core (Click here for this guide)
+3. Connect the K8s cluster to Illumio Core (Click <a href="#">here</a> for this guide)
 
 This guide walks through the first step, building a K8s cluster. Follow <a href="https://github.com/johnwesterman/illumio_core/blob/cliffnotes_2022.08/README.md">this guide</a> by John Westerman to build your PCE. Follow <a href="#">this guide</a> to connect your K8s cluster to the Illumio Core PCE. Let's get to it. 
 
 
 ## Summary of Tasks:
 
-1. Download Ubuntu 20.04 (link) and install it on three virtual machines in hypervisor of your choice
+1. Download Ubuntu 20.04  <a href="https://www.linuxvmimages.com/images/ubuntuserver-2204/">(link)</a> and install it on three virtual machines in hypervisor of your choice
 2. Install K8s and Docker
 3. Rollback kubelet 1.26 to 1.25 to mitigate bug and "hold" packages
 4. Disable swap memory 
@@ -45,26 +45,21 @@ I recommend running the entire setup as root (sudo -i) and then switching back t
 Install http/https transport and curl
 ```
 
-sudo apt install apt-transport-https curl
+sudo apt-get update && sudo apt-get install -y apt-transport-https curl
 
 ```
 
 Add K8s signing key
 ```
 
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+deb https://apt.kubernetes.io/ kubernetes-xenial main
+EOF
 
 ```
 
-Add K8s repository 
-```
-
-echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" >> ~/kubernetes.list
-sudo mv ~/kubernetes.list /etc/apt/sources.list.d
-
-```
-
-Update everything
+Get Updates
 ```
 
 sudo apt update
