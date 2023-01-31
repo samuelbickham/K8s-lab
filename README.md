@@ -20,17 +20,18 @@ This guide walks through the first step, building a K8s cluster. Follow <a href=
 ## Summary of Tasks:
 
 1. Download Ubuntu 20.04  <a href="https://www.linuxvmimages.com/images/ubuntuserver-2204/">(link)</a> and install it on three virtual machines in hypervisor of your choice
-2. Install K8s and Docker
-3. Rollback kubelet 1.26 to 1.25 to mitigate bug and "hold" packages
-4. Disable swap memory 
-5. Set node hostnames
-6. Enable traffic bridging
-7. Change Docker CGroup driver
-8. Initialize K8s cluster on Master Node
-9. Export K8s control config as root and normal user
-10. Disable firewall and deploy CNI (pod networking)
-11. Join worker nodes to cluster
-12. Deploy K8s application and make it accessible
+2. Install Docker 
+3. Remove legacy containerD files and update
+4. Install K8s & rollback kubelet 1.26 to 1.25 to mitigate bug and "hold" packages
+5. Disable swap memory 
+6. Set node hostnames
+7. Enable traffic bridging
+8. Change Docker CGroup driver
+9. Initialize K8s cluster on Master Node
+10. Export K8s control config as root and normal user
+11. Disable firewall and deploy CNI (pod networking)
+12. Join worker nodes to cluster
+13. Deploy K8s application and make it accessible
 
 
 ## Step 1: Download Ubuntu 20.04 (link) and install it on three virtual machines in hypervisor of your choice
@@ -38,16 +39,72 @@ This guide walks through the first step, building a K8s cluster. Follow <a href=
 You can download it <a href="https://www.linuxvmimages.com/images/ubuntuserver-2204/">here.</a> Accept all defaults during install, do not run updates and install the OpenSSH server. 
 
 
-## Step 2: Install K8s and Docker (ALL NODES)
+## Step 2: Install Docker (ALL NODES)
 
 I recommend running the entire setup as root (sudo -i) and then switching back to your normal user account once everyting is setup. 
 
-Install http/https transport and curl
+Update Index and Install tools
 ```
 
-sudo apt-get update && sudo apt-get install -y apt-transport-https curl
+sudo apt-get update
+
+sudo apt-get install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
 
 ```
+
+
+Add Docker's latest official GPG Key
+```
+
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+```
+
+
+Add Docker's latest official Repository
+```
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+```
+
+
+Update indexes again and install latest Docker files
+```
+
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+```
+
+
+## Step 3: Remove legacy containerD files and update (ALL NODES)
+
+Remove legacy containerD, update indexes, install new containerD, remove default config file, restart service
+```
+
+apt remove containerd
+apt update
+apt install containerd.io
+rm /etc/containerd/config.toml
+systemctl restart containerd
+
+
+```
+
+
+
+## Step 4: Install K8s & rollback kubelet 1.26 to 1.25 to mitigate bug and (optionally) "hold" packages (ALL NODES)
+
+I recommend running the entire setup as root (sudo -i) and then switching back to your normal user account once everyting is setup. 
+
 
 Add K8s signing key
 ```
@@ -66,14 +123,12 @@ sudo apt update
 
 ```
 
-Install K8s, tools and Docker
+Install K8s (kubelet, kubeadm, kubectl and k8s CNI)
 ```
+
 sudo apt-get install -y kubelet kubeadm kubectl kubernetes-cni
 
-sudo apt install docker.io
 ```
-
-## Step 3: Rollback kubelet 1.26 to 1.25 to mitigate bug and (optionally) "hold" packages (ALL NODES)
 
 There is a bug in Kubelet 1.26 that causes problems when you try to initialize the cluster. There are workarounds on the internet, however since this is a lab and the goal is to quickly get things up and running, I recommend just rolling back to Kubelet 1.25. You can optionally put a "hold" on the k8s packages so you can update the system without breaking your cluster. 
 
@@ -93,7 +148,9 @@ apt-mark unhold $(apt-mark showhold)
 
 ```
 
-## Step 4: Disable swap memory  (ALL NODES)
+
+
+## Step 5: Disable swap memory  (ALL NODES)
 
 Current versions of K8s are NOT designed to run with swap memory enabled on the system. Tecnically, you can initialize the cluster with switches that will ignore proboems (e.g. sudo kubeadm init --ignore-preflight-errors=NumCPU,Mem,Swap...) but this is generally not advised as is can create unpredictable behaviors. 
 
@@ -112,7 +169,9 @@ sudo vi /etc/fstab
 
 ```
 
-## Step 5: Set node hostnames (ALL NODES)
+
+
+## Step 6: Set node hostnames (ALL NODES)
 
 In my lab, I have 1 masternode (K8s control plane) and 2 worker nodes (K8s data plane). 
 
@@ -140,7 +199,9 @@ init 6
 
 ```
 
-## Step 6: Enable Traffic Bridging (ALL NODES)
+
+
+## Step 7: Enable Traffic Bridging (ALL NODES)
 
 For the master and worker nodes to correctly see bridged traffic, we need to enable that module. 
 
@@ -160,7 +221,9 @@ sudo sysctl net.bridge.bridge-nf-call-iptables=1
 
 ```
 
-## Step 7: Change the Docker CGroup driver (ALL NODES)
+
+
+## Step 8: Change the Docker CGroup driver (ALL NODES)
 
 Kubernetes recommends running containers with the "systemd” driver set rather than the Docker default “cgroupfs.” This is technically not required, but will throw a warnning message everytime you start the cluster, and it's a simple thing to change.
 
@@ -180,8 +243,19 @@ EOF
 
 ```
 
+Enable Docker at boot and reload services
 
-## Step 8: Initialize K8s cluster on Master Node (MASTER NODE ONLY)
+```
+
+sudo systemctl enable docker
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+
+```
+
+
+
+## Step 9: Initialize K8s cluster on Master Node (MASTER NODE ONLY)
 
 Initialize the cluster and CIDR (IP address block) to be used for container networking. If the cluster successfully initializes, you will be provided with a code snippet to join worker nodes to the cluster, as well as export commands to make the "kubectl" commands available to root and normal users.  
 
@@ -211,7 +285,7 @@ sudo kubeadm init --pod-network-cidr=10.244.0.0/16
 
 
 
-## Step 9: Export K8s control config as root and normal user (MASTER NODE ONLY)
+## Step 10: Export K8s control config as root and normal user (MASTER NODE ONLY)
 
 These commands are required to access the "kubectl" commands for cluster config.
 For root user:
@@ -242,7 +316,7 @@ kubectl get pods --all-namespaces
 ```
  
 
-## Step 10: Disable firewall (ALL NODES) and deploy CNI for pod networking (MASTER NODE ONLY)
+## Step 11: Disable firewall (ALL NODES) and deploy CNI for pod networking (MASTER NODE ONLY)
 
 In production, we would punch holes in the local firewall to make this work. For a lab, let's just disable the firewall. For CNI (container networking interface) we are deploying Flannel. If you want to deply something else, you can find the info here:
 https://kubernetes.io/docs/concepts/cluster-administration/addons/#networking-and-network-policy
@@ -274,7 +348,7 @@ kubectl get pods --all-namespaces
 
 
 
-## Step 11: Join worker nodes to cluster (WORKER NODES ONLY)
+## Step 12: Join worker nodes to cluster (WORKER NODES ONLY)
 
 On your master node, you will have a config snippet to join the worker nodes right after the cluster initialization. Copy the text exactly as it is, even if there is a line break and past it into your worker nodes CLI.
 
@@ -326,7 +400,7 @@ kubectl get nodes
 
 
 
-## Step 12: Deploy K8s application and make it accessible (MASTER NODE ONLY)
+## Step 13: Deploy K8s application and make it accessible (MASTER NODE ONLY)
 
 At this point, we're ready to deploy a containerized app. Let's deploy an NginX container. 
 
