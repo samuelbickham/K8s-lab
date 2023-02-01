@@ -56,6 +56,14 @@ sudo apt-get install \
 
 ```
 
+NOTE: If you get an error about files/processes being "on-hold," don't sweat. It's just the system trying to auto-update in the background. 
+You can run the below command to see what's creating the hold, and just keep running it until they disappear. 
+```
+
+ps aux | grep -i apt
+
+```
+
 
 Add Docker's latest official GPG Key
 ```
