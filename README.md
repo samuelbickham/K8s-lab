@@ -1,20 +1,20 @@
 
-# K8S + Illumio Home Lab Guide
+# K8S + Illumio Home Lab Guide - Part 1
 
 ```
 Author: Samuel Bickham
-Version 2023.01
+Version 2023.04
 
 ```
 
 ## Overview
 
-This document is a walkthrough for setting up Kubernetes (K8s) with Docker container runtime and connecting it to an Illumio Core PCE. There are 3 main components:
+This document is part 1 of a series walking through building a Kubernetes (K8s) cluster with a containerD runtime and connecting it to an Illumio Core PCE. There are 3 main parts:
 1. Build a K8s cluster (the guide your reading)
-2. Build an Illumio Core PCE 
-3. Connect the K8s cluster to Illumio Core (Click <a href="#">here</a> for this guide)
+2. Build an Illumio Core PCE (Follow <a href="https://github.com/johnwesterman/illumio_core/blob/cliffnotes_2022.08/README.md">this guide</a> by John Westerman)
+3. Connect the K8s cluster to Illumio Core PCE  (Follow <a href="https://github.com/samuelbickham/K8s-lab/blob/main/K8S_to_PCE.md">this guide</a>)
 
-This guide walks through the first step, building a K8s cluster. Follow <a href="https://github.com/johnwesterman/illumio_core/blob/cliffnotes_2022.08/README.md">this guide</a> by John Westerman to build your PCE. Follow <a href="#">this guide</a> to connect your K8s cluster to the Illumio Core PCE. Let's get to it. 
+This guide walks through the first step, building a K8s cluster. Follow <a href="https://github.com/johnwesterman/illumio_core/blob/cliffnotes_2022.08/README.md">this guide</a> by John Westerman to build your PCE. Follow <a href="https://github.com/samuelbickham/K8s-lab/blob/main/K8S_to_PCE.md">this guide</a> to connect your K8s cluster to the Illumio Core PCE. Let's get to it. 
 
 
 ## Summary of Tasks:
