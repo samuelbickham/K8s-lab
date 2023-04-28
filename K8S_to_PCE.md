@@ -83,6 +83,12 @@ Main Menu -> Workloads and VENs -> Pairing Profiles -> "Add"
 
 ```
 
+AFTER completing this guide (as in, not now) connecting k8s to your PCE, you can create container workload profiles. Container workload profile allow us to choose which namespaces we really want to manage, to set custom labels, visibility and enforcement. Container workload profiles also allows us to MANAGE and IMPORT pods and VISUALIZE them on the Illumination map
+```
+
+Main menu -> Infrastructure -> Container Clusters -> YOUR_CLUSTER_NAME -> "Container workload profiles" tab
+
+```
 
 
 
