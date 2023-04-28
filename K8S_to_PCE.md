@@ -134,6 +134,43 @@ kubectl get nodes -o wide
 
 ```
 
+NOTE: If you're using a self-signed cert OR a valid cert signed through private PKI (i.e. not a trusted public 3rd party) you will need to add the following values to illumio-values.yaml AND create a config map (below). If you PCE cert is publicly signed by a trusted 3rd party, you DO NOT need to add the extra bit to illumio-values.yaml OR do the config-map. 
+
+Add private PKi values to yaml (Spacing on this part needs to follow the exact format)
+```
+
+extraVolumeMounts:
+  - name: root-ca
+    mountPath: /etc/pki/tls/ilo_certs/
+    readOnly: false
+extraVolumes:
+  - name: root-ca
+    configMap:
+      name: root-ca-config
+
+```
+
+Since we need to reference the illumio-system namespace before it exists, let's create it
+```
+
+Kubectl create namespace illumio-system
+
+```
+
+Create a config-map (copy PCE server.crt to node where you're performing this command)
+```
+
+kubectl -n illumio-system create configmap root-ca-config \
+       --from-file=./server.crt
+
+```
+
+Verify config map
+```
+
+kubectl -n illumio-system get configmap
+
+```
 
 
 ## Step 5: Deploy Kube-link and C-VEN via Helm (MASTER NODE ONLY)
@@ -182,9 +219,33 @@ helm uninstall illumio --namespace illumio-system
 
 
 
+## Step 6: Troubleshooting, further deployments and testing (gb.yaml and changing enforcement mode)
 
 
-## Step 6: Further deployments and testing (gb.yaml and changing enforcement mode)
+GET Kubelink logs
 
-TBD
+```
+
+ kubectl -n illumio-system logs illumio-kubelink-UNIQUE_ID
+
+```
+
+Restart kube-link
+
+```
+
+kubectl rollout restart -n illumio-system deployment/illumio-kubelink
+
+```
+
+Reminder on Illumio PCE folder locations
+
+```
+
+/opt/illumio-pce (executables)
+/var/lib/illumio-pce (databases, CERTS (/cert/) , config) 
+/var/log/illumio-pce (logs)
+/etc/illumio-pce (runtime env files)
+
+```
 
